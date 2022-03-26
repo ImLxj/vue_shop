@@ -2,13 +2,37 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Login from '../components/Login.vue'
 import Home from '../components/Home'
+import Welcome from '../components/Welcome.vue'
+import Users from '../components/user/Users.vue'
+import Roles from '../components/Roles.vue'
+import Rights from '../components/Rights.vue'
+import Goods from '../components/Goods.vue'
+import Params from '../components/Params.vue'
+import Categories from '../components/Categories.vue'
+import Orders from '../components/Orders.vue'
+import Reports from '../components/Reports.vue'
 Vue.use(VueRouter)
 
 const routes = [
   { path: '/', redirect: '/login' },
   // 配置登录组件
   { path: '/login', component: Login },
-  { path: '/home', component: Home }
+  {
+    path: '/home',
+    component: Home,
+    redirect: '/welcome',
+    children: [
+      { path: '/welcome', component: Welcome },
+      { path: '/users', component: Users },
+      { path: '/roles', component: Roles },
+      { path: '/rights', component: Rights },
+      { path: '/goods', component: Goods },
+      { path: '/params', component: Params },
+      { path: '/categories', component: Categories },
+      { path: '/orders', component: Orders },
+      { path: '/reports', component: Reports },
+    ]
+  }
 ]
 
 const router = new VueRouter({
