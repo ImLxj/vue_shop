@@ -161,16 +161,27 @@
       title="分配角色"
       :visible.sync="setRolesDialogVisible"
       width="50%"
+      @close="setRoleDialogClosed"
     >
       <div>
         <p>当前的用户:{{ userInfo.username }}</p>
         <p>当前的角色:{{ userInfo.role_name }}</p>
+        <p>
+          分配新角色
+          <el-select v-model="selectedRoleId" placeholder="请选择">
+            <el-option
+              v-for="item in rolesList"
+              :key="item.id"
+              :label="item.roleName"
+              :value="item.id"
+            >
+            </el-option>
+          </el-select>
+        </p>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="setRolesDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="setRolesDialogVisible = false"
-          >确 定</el-button
-        >
+        <el-button type="primary" @click="saveRoleInfo">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -269,6 +280,8 @@ export default {
       userInfo: {},
       // 获取所有角色列表
       rolesList: [],
+      // 已选中的角色id值
+      selectedRoleId: '',
     }
   },
   created() {
@@ -396,6 +409,29 @@ export default {
 
       this.rolesList = res.data
       this.setRolesDialogVisible = true
+    },
+    // 点击确定按钮保存当前分配的角色
+    async saveRoleInfo() {
+      // 先判断用户是否选中了已经分配的角色
+      if (!this.selectedRoleId) return this.$message.error('请选择分配角色')
+      // 如果选择了分配的角色 可以发起网络请求
+      const { data: res } = await this.$http.put(
+        `users/${this.userInfo.id}/role`,
+        {
+          rid: this.selectedRoleId,
+        }
+      )
+      if (res.meta.status !== 200) return this.$message.error('分配角色失败')
+      if (res.meta.status !== 400)
+        return this.$message.error('不允许修改超级管理员账户')
+      this.$message.success('分配角色成功')
+      this.getUserList()
+      this.setRolesDialogVisible = false
+    },
+    // 监听对话框的关闭事件
+    setRoleDialogClosed() {
+      this.selectedRoleId = ''
+      this.userInfo = {}
     },
   },
 }
