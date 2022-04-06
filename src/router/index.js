@@ -8,7 +8,7 @@ import Roles from '../components/power/Roles.vue'
 import Rights from '../components/power/Rights.vue'
 import Goods from '../components/Goods.vue'
 import Params from '../components/Params.vue'
-import Categories from '../components/Categories.vue'
+import Categories from '../components/goods/Categories.vue'
 import Orders from '../components/Orders.vue'
 import Reports from '../components/Reports.vue'
 Vue.use(VueRouter)

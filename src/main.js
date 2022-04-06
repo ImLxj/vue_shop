@@ -4,6 +4,8 @@ import router from './router'
 import './plugins/element.js'
 import './assets/css/global.css'
 import axios from 'axios'
+// 引入tree-table插件
+import TreeTable from 'vue-table-with-tree-grid'
 // 引入图标库
 import './assets/font-awesome-4.7.0/css/font-awesome.min.css'
 // 配置请求的根路径
@@ -16,6 +18,8 @@ axios.interceptors.request.use(config => {
   return config
 })
 Vue.config.productionTip = false
+// 注册全局插件
+Vue.component('tree-table', TreeTable)
 
 new Vue({
   router,
