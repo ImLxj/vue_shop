@@ -49,6 +49,7 @@
                   v-for="(item, index) in scope.row.attr_vals"
                   :key="index"
                   closable
+                  @close="handlerClosed(index, scope.row)"
                   >{{ item }}</el-tag
                 >
                 <el-input
@@ -57,8 +58,8 @@
                   v-model="scope.row.inputValue"
                   ref="saveTagInput"
                   size="small"
-                  @keyup.enter.native="handleInputConfirm"
-                  @blur="handleInputConfirm"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
                 >
                 </el-input>
                 <el-button
@@ -107,7 +108,34 @@
           <!-- 渲染数据表格 -->
           <el-table :data="onlyTableData" border stripe>
             <!-- 展开列 -->
-            <el-table-column type="expand"></el-table-column>
+            <el-table-column type="expand">
+              <template slot-scope="scope">
+                <el-tag
+                  v-for="(item, index) in scope.row.attr_vals"
+                  :key="index"
+                  closable
+                  @close="handlerClosed(index, scope.row)"
+                  >{{ item }}</el-tag
+                >
+                <el-input
+                  class="input-new-tag"
+                  v-if="scope.row.inputVisible"
+                  v-model="scope.row.inputValue"
+                  ref="saveTagInput"
+                  size="small"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
+                >
+                </el-input>
+                <el-button
+                  v-else
+                  class="button-new-tag"
+                  size="small"
+                  @click="showInput(scope.row)"
+                  >+ New Tag</el-button
+                >
+              </template>
+            </el-table-column>
             <!-- 索引列 -->
             <el-table-column type="index"></el-table-column>
             <el-table-column
@@ -262,6 +290,8 @@ export default {
       // 判断是否选中的三级列表
       if (this.selectedCateKeys.length !== 3) {
         this.selectedCateKeys = []
+        this.manyTableData = []
+        this.onlyTableData = []
         return
       }
       // 如果选中的三级标签则发起请求
@@ -364,10 +394,45 @@ export default {
       this.getParamsCate()
     },
     // 文本框失去焦点或者键盘按下enter键都会触发
-    handleInputConfirm() {},
+    async handleInputConfirm(row) {
+      if (row.inputValue.trim().length === 0) {
+        row.inputValue = ''
+        row.inputVisible = false
+        return
+      }
+      // 如果没有return 则做出后续的处理
+      row.attr_vals.push(row.inputValue.trim())
+      row.inputValue = ''
+      this.saveAttrVal(row)
+    },
     // 显示文本框
     showInput(row) {
       row.inputVisible = true
+      // $nextTick 方法的作用，就是当页面上元素被重新渲染之后，在执行回调函数当中的代码
+      this.$nextTick((_) => {
+        // 这个时候被页面重新渲染的只有input这个输入框，所以说this.$refs里面值含有input的vc实例对象
+        // 当savaTagInput里面含有input的实例对象，这个实例对象里面的$refs才有input这个文本输入框的实例
+        this.$refs.saveTagInput.$refs.input.focus()
+      })
+    },
+    // 处理删除参数的函数
+    async saveAttrVal(row) {
+      // 发起网络请求，将添加的属性保存到数据库当中
+      const { data: res } = await this.$http.put(
+        `categories/${this.cateId}/attributes/${row.attr_id}`,
+        {
+          attr_name: row.attr_name,
+          attr_sel: row.attr_sel,
+          attr_vals: row.attr_vals.join(' '),
+        }
+      )
+      if (res.meta.status !== 200) return this.$message.error('添加参数失败')
+      this.$message.success('操作成功')
+    },
+    // 删除参数的操作
+    handlerClosed(index, row) {
+      row.attr_vals.splice(index, 1)
+      this.saveAttrVal(row)
     },
   },
   computed: {
