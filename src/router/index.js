@@ -6,31 +6,67 @@ import Welcome from '../components/Welcome.vue'
 import Users from '../components/user/Users.vue'
 import Roles from '../components/power/Roles.vue'
 import Rights from '../components/power/Rights.vue'
-import Goods from '../components/Goods.vue'
+import Goods from '../components/goods/Goods.vue'
 import Params from '../components/goods/Params.vue'
 import Categories from '../components/goods/Categories.vue'
 import Orders from '../components/Orders.vue'
 import Reports from '../components/Reports.vue'
+import Add from '../components/goods/Add.vue';
 Vue.use(VueRouter)
 
-const routes = [
-  { path: '/', redirect: '/login' },
+const routes = [{
+    path: '/',
+    redirect: '/login'
+  },
   // 配置登录组件
-  { path: '/login', component: Login },
+  {
+    path: '/login',
+    component: Login
+  },
   {
     path: '/home',
     component: Home,
     redirect: '/welcome',
-    children: [
-      { path: '/welcome', component: Welcome },
-      { path: '/users', component: Users },
-      { path: '/roles', component: Roles },
-      { path: '/rights', component: Rights },
-      { path: '/goods', component: Goods },
-      { path: '/params', component: Params },
-      { path: '/categories', component: Categories },
-      { path: '/orders', component: Orders },
-      { path: '/reports', component: Reports },
+    children: [{
+        path: '/welcome',
+        component: Welcome
+      },
+      {
+        path: '/users',
+        component: Users
+      },
+      {
+        path: '/roles',
+        component: Roles
+      },
+      {
+        path: '/rights',
+        component: Rights
+      },
+      {
+        path: '/goods',
+        component: Goods,
+      },
+      {
+        path: '/params',
+        component: Params
+      },
+      {
+        path: '/categories',
+        component: Categories
+      },
+      {
+        path: '/orders',
+        component: Orders
+      },
+      {
+        path: '/reports',
+        component: Reports
+      },
+      {
+        path: '/goods/add',
+        component: Add
+      },
     ]
   }
 ]
