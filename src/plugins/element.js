@@ -1,3 +1,11 @@
+/*
+ * @Author: lxj
+ * @Date: 2022-04-08 18:05:48
+ * @LastEditTime: 2022-04-09 14:15:45
+ * @LastEditors: Please set LastEditors
+ * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @FilePath: \vue_shop\src\plugins\element.js
+ */
 import Vue from 'vue'
 import {
   Button,
@@ -33,7 +41,10 @@ import {
   Tabs,
   TabPane,
   Steps,
-  Step
+  Step,
+  Checkbox,
+  CheckboxGroup,
+  Upload
 } from 'element-ui'
 
 Vue.use(Button)
@@ -68,6 +79,9 @@ Vue.use(Tabs)
 Vue.use(TabPane)
 Vue.use(Steps)
 Vue.use(Step)
+Vue.use(Checkbox)
+Vue.use(CheckboxGroup)
+Vue.use(Upload)
 
 // 将弹框组件挂载到Vue身上
 Vue.prototype.$message = Message

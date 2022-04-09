@@ -1,3 +1,10 @@
+<!--
+ * @Author: lxj
+ * @Date: 2022-04-08 18:05:48
+ * @LastEditTime: 2022-04-09 14:16:24
+ * @LastEditors: Please set LastEditors
+ * @FilePath: \vue_shop\src\components\goods\Add.vue
+-->
 <template>
   <div>
     <!-- 面包屑导航区 -->
@@ -35,17 +42,83 @@
       </el-steps>
 
       <!-- Tap拦区域 -->
-      <el-tabs
-        v-model="activeIndex"
-        :tab-position="'left'"
-        style="height: 200px"
+      <el-form
+        :model="addForm"
+        :rules="addFormRules"
+        ref="addFormRef"
+        label-position="left"
       >
-        <el-tab-pane label="基本信息" name="0">基本信息</el-tab-pane>
-        <el-tab-pane label="商品参数" name="1">商品参数</el-tab-pane>
-        <el-tab-pane label="商品属性" name="2">商品属性</el-tab-pane>
-        <el-tab-pane label="商品图片" name="3">商品图片</el-tab-pane>
-        <el-tab-pane label="商品内容" name="4">商品内容</el-tab-pane>
-      </el-tabs>
+        <el-tabs
+          v-model="activeIndex"
+          :tab-position="'left'"
+          style="height: auto"
+          :before-leave="beforeActive"
+          @tab-click="tabClicked"
+        >
+          <el-tab-pane label="基本信息" name="0">
+            <el-form-item label="商品名称" prop="goods_name">
+              <el-input v-model="addForm.goods_name"></el-input>
+            </el-form-item>
+            <el-form-item label="商品价格" prop="goods_price">
+              <el-input v-model="addForm.goods_price" type="number"></el-input>
+            </el-form-item>
+            <el-form-item label="商品重量" prop="goods_weight">
+              <el-input v-model="addForm.goods_weight" type="number"></el-input>
+            </el-form-item>
+            <el-form-item label="商品数量" prop="goods_number">
+              <el-input v-model="addForm.goods_number" type="number"></el-input>
+            </el-form-item>
+            <el-form-item label="商品分类" prop="goods_cat">
+              <el-cascader
+                v-model="addForm.goods_cat"
+                :options="cateList"
+                :props="cateProps"
+                @change="handleChange"
+              ></el-cascader>
+            </el-form-item>
+          </el-tab-pane>
+          <el-tab-pane label="商品参数" name="1">
+            <el-form-item
+              v-for="item in manyTableData"
+              :key="item.attr_id"
+              :label="item.attr_name"
+            >
+              <el-checkbox-group v-model="item.attr_vals">
+                <el-checkbox
+                  border
+                  v-for="(cb, i) in item.attr_vals"
+                  :key="i"
+                  :label="cb"
+                ></el-checkbox>
+              </el-checkbox-group>
+            </el-form-item>
+          </el-tab-pane>
+          <el-tab-pane label="商品属性" name="2">
+            <el-form-item
+              :label="item.attr_name"
+              v-for="item in onlyTableData"
+              :key="item.attr_id"
+            >
+              <el-input v-model="item.attr_vals"></el-input>
+            </el-form-item>
+          </el-tab-pane>
+          <el-tab-pane label="商品图片" name="3">
+            <!-- action 表示图片上传请求的后台api接口
+                 list-type 表示图片显示的方式
+             -->
+            <el-upload
+              :action="uploadUrl"
+              :on-preview="handlePreview"
+              :on-remove="handleRemove"
+              list-type="picture"
+              :headers="headersObj"
+            >
+              <el-button size="small" type="primary">点击上传</el-button>
+            </el-upload>
+          </el-tab-pane>
+          <el-tab-pane label="商品内容" name="4">商品内容</el-tab-pane>
+        </el-tabs>
+      </el-form>
     </el-card>
   </div>
 </template>
@@ -56,12 +129,138 @@ export default {
   data() {
     return {
       activeIndex: '0',
+      // 添加商品的信息
+      addForm: {
+        goods_name: '',
+        goods_price: 0,
+        goods_weight: 0,
+        goods_number: 0,
+        goods_cat: [],
+      },
+      // 商品信息的输入校验
+      addFormRules: {
+        goods_name: [
+          { required: true, message: '请输入商品名称', trigger: 'blur' },
+        ],
+        goods_price: [
+          { required: true, message: '请输入商品价格', trigger: 'blur' },
+        ],
+        goods_weight: [
+          { required: true, message: '请输入商品重量', trigger: 'blur' },
+        ],
+        goods_number: [
+          { required: true, message: '请输入商品数量', trigger: 'blur' },
+        ],
+        goods_cat: [
+          { required: true, message: '请选择商品分类', trigger: 'blur' },
+        ],
+      },
+      // 商品分类列表
+      cateList: [],
+      // 级联选择器配置对象
+      cateProps: {
+        expandTrigger: 'hover',
+        value: 'cat_id',
+        label: 'cat_name',
+        children: 'children',
+      },
+      // 动态参数列表
+      manyTableData: [],
+      // 静态属性参数列表
+      onlyTableData: [],
+      // 上传图片的路径
+      uploadUrl: 'http://127.0.0.1:8888/api/private/v1/upload',
+      // 图片上传组件的headers请求头对象
+      headersObj: {
+        Authorization: window.sessionStorage.getItem('token'),
+      },
     }
   },
-  created() {},
-  methods: {},
+  created() {
+    this.getCateList()
+  },
+  methods: {
+    // 获取商品分类列表
+    async getCateList() {
+      const { data: res } = await this.$http.get('categories')
+      if (res.meta.status !== 200)
+        return this.$message.error('获取商品列表失败')
+
+      this.cateList = res.data
+    },
+    // 当级联选择器发生改变时触发
+    handleChange() {
+      if (this.addForm.goods_cat.length !== 3) {
+        this.addForm.goods_cat = []
+      }
+    },
+    // 标签页的判断
+    beforeActive(activeName, oldActiveName) {
+      // activeName 即将进入的标签页的名字
+      // oldActiveName 即将离开的标签页的名字
+      if (oldActiveName === '0' && this.addForm.goods_cat.length !== 3) {
+        this.$message.info('请选择商品分类')
+        return false
+      }
+    },
+    // 当点击某个标签时触发
+    async tabClicked() {
+      // 获取动态参数列表
+      if (this.activeIndex === '1') {
+        const { data: res } = await this.$http.get(
+          `categories/${this.cateId}/attributes`,
+          {
+            params: {
+              sel: 'many',
+            },
+          }
+        )
+
+        if (res.meta.status !== 200)
+          return this.$message.error('获取动态参数列表失败')
+
+        this.$message.success('获取动态参数列表成功')
+        // 在数据赋值之前先将attr_val字符串变成数组
+        res.data.forEach((item) => {
+          item.attr_vals =
+            item.attr_vals.length === 0 ? [] : item.attr_vals.split(' ')
+        })
+        this.manyTableData = res.data
+      } else if (this.activeIndex === '2') {
+        // 获取静态属性列表
+        const { data: res } = await this.$http.get(
+          `categories/${this.cateId}/attributes`,
+          {
+            params: {
+              sel: 'only',
+            },
+          }
+        )
+        if (res.meta.status !== 200)
+          return this.$message.error('获取静态属性列表失败')
+
+        this.$message.success('获取静态属性列表成功')
+        this.onlyTableData = res.data
+      }
+    },
+    // 处理图片预览效果
+    handlePreview() {},
+    // 处理移除图片的操作
+    handleRemove() {},
+  },
+  computed: {
+    cateId() {
+      if (this.addForm.goods_cat.length === 3) {
+        return this.addForm.goods_cat[2]
+      }
+      return null
+    },
+  },
 }
 </script>
 
 <style scoped>
+.el-cascader {
+  width: 200px;
+}
 </style>
