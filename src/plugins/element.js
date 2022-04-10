@@ -1,11 +1,14 @@
 /*
- * @Author: lxj
- * @Date: 2022-04-08 18:05:48
- * @LastEditTime: 2022-04-09 14:15:45
- * @LastEditors: Please set LastEditors
- * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @Author: 呲牙
+ * @LastEditors: 呲牙
+ * @Date: 2022-04-09 14:21:43
+ * @LastEditTime: 2022-04-10 14:34:01
+ * @Email: 1340482172@qq.com
  * @FilePath: \vue_shop\src\plugins\element.js
+ * @Environment: Win 10 Python 3.8
+ * @Description: 
  */
+
 import Vue from 'vue'
 import {
   Button,
@@ -44,7 +47,9 @@ import {
   Step,
   Checkbox,
   CheckboxGroup,
-  Upload
+  Upload,
+  Timeline,
+  TimelineItem
 } from 'element-ui'
 
 Vue.use(Button)
@@ -82,6 +87,8 @@ Vue.use(Step)
 Vue.use(Checkbox)
 Vue.use(CheckboxGroup)
 Vue.use(Upload)
+Vue.use(Timeline)
+Vue.use(TimelineItem)
 
 // 将弹框组件挂载到Vue身上
 Vue.prototype.$message = Message
