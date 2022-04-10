@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2022-04-08 18:05:48
- * @LastEditTime: 2022-04-09 14:11:06
- * @LastEditors: your name
+ * @LastEditTime: 2022-04-10 11:21:17
+ * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: \vue_shop\src\main.js
  */
@@ -16,6 +16,11 @@ import axios from 'axios'
 import TreeTable from 'vue-table-with-tree-grid'
 // 引入图标库
 import './assets/font-awesome-4.7.0/css/font-awesome.min.css'
+// 导入富文本编辑器
+import VueQuillEditor from 'vue-quill-editor'
+import 'quill/dist/quill.core.css' // import styles
+import 'quill/dist/quill.snow.css' // for snow theme
+import 'quill/dist/quill.bubble.css' // for bubble theme
 // 配置请求的根路径
 axios.defaults.baseURL = 'http://127.0.0.1:8888/api/private/v1/'
 Vue.prototype.$http = axios
@@ -48,6 +53,9 @@ Vue.filter('dataFormat', (originVal) => {
 })
 // 注册全局插件
 Vue.component('tree-table', TreeTable)
+// 将富文本编辑器注册成为全局可用的组件
+Vue.use(VueQuillEditor)
+
 
 new Vue({
   router,

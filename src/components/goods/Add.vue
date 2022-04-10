@@ -1,7 +1,7 @@
 <!--
  * @Author: lxj
  * @Date: 2022-04-08 18:05:48
- * @LastEditTime: 2022-04-09 14:16:24
+ * @LastEditTime: 2022-04-10 12:00:11
  * @LastEditors: Please set LastEditors
  * @FilePath: \vue_shop\src\components\goods\Add.vue
 -->
@@ -112,18 +112,33 @@
               :on-remove="handleRemove"
               list-type="picture"
               :headers="headersObj"
+              :on-success="handelSuccess"
             >
               <el-button size="small" type="primary">点击上传</el-button>
             </el-upload>
           </el-tab-pane>
-          <el-tab-pane label="商品内容" name="4">商品内容</el-tab-pane>
+          <el-tab-pane label="商品内容" name="4">
+            <!-- 富文本编辑器组件 -->
+            <quill-editor v-model="addForm.goods_introduce"></quill-editor>
+            <!-- 添加按钮 -->
+            <el-button type="primary" class="addBtn" @click="add"
+              >添加商品</el-button
+            >
+          </el-tab-pane>
         </el-tabs>
       </el-form>
     </el-card>
+
+    <!-- 图片预览的dialog -->
+    <el-dialog title="图片预览" :visible.sync="previewVisible" width="50%">
+      <img :src="previewPath" class="imgWidth" />
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import _ from 'lodash'
+
 export default {
   name: 'Add',
   data() {
@@ -136,6 +151,12 @@ export default {
         goods_weight: 0,
         goods_number: 0,
         goods_cat: [],
+        // 图片的路径地址保存到该数组中
+        pics: [],
+        // 商品的内容介绍
+        goods_introduce: '',
+        // 商品的参数
+        attrs: [],
       },
       // 商品信息的输入校验
       addFormRules: {
@@ -174,6 +195,9 @@ export default {
       headersObj: {
         Authorization: window.sessionStorage.getItem('token'),
       },
+      // 图片预览的路径
+      previewPath: '',
+      previewVisible: false,
     }
   },
   created() {
@@ -244,9 +268,62 @@ export default {
       }
     },
     // 处理图片预览效果
-    handlePreview() {},
+    handlePreview(file) {
+      // 将图片预览路径保存起来
+      this.previewPath = file.response.data.url
+      // 将图片预览的对话框显示出来
+      this.previewVisible = true
+    },
     // 处理移除图片的操作
-    handleRemove() {},
+    handleRemove(file) {
+      // 1. 先获取当前要移除图片的保存的路径
+      const filePath = file.response.data.tmp_path
+      // 2. 然后在根据findIndex这个方法来判断这个路径和pics这个数组中的路径有没有一样的，如果有则返回该数组的索引值
+      const i = this.addForm.pics.findIndex((x) => {
+        x.pic === filePath
+      })
+      // 3. 在将获取到的索引值使用splice删除即可
+      this.addForm.pics.splice(i, 1)
+    },
+    // 上传图片成功的生命周期钩子
+    handelSuccess(response) {
+      // 创建一个对象将服务器返回的图片的路径放到该对象里面
+      const picInfo = { pic: response.data.tmp_path }
+      // 然后将对象push到pics这个数组里面
+      this.addForm.pics.push(picInfo)
+    },
+    // 添加商品的预校验
+    add() {
+      this.$refs.addFormRef.validate(async (valid) => {
+        if (!valid) return this.$message.error('请填写必要的表单项')
+        // 执行添加的请求
+        // 在执行添加之前先对addForm对象深拷贝
+        const form = _.cloneDeep(this.addForm)
+        form.goods_cat = form.goods_cat.join(',')
+        // 处理动态参数，动态参数的attr_vals是数组，需要吧数组转化为字符出
+        this.manyTableData.forEach((item) => {
+          const newInfo = {
+            attr_id: item.attr_id,
+            attr_value: item.attr_vals.join(' '),
+          }
+          this.addForm.attrs.push(newInfo)
+        })
+        // 处理静态属性,静态属性的attr_vals是字符串
+        this.onlyTableData.forEach((item) => {
+          const newInfo = {
+            attr_id: item.attr_id,
+            attr_value: item.attr_vals,
+          }
+          this.addForm.attrs.push(newInfo)
+        })
+        form.attrs = this.addForm.attrs
+        // 发起添加商品的请求
+        const { data: res } = await this.$http.post('goods', form)
+        if (res.meta.status !== 201) return this.$message.error('添加商品失败')
+        this.$message.success('添加商品成功')
+        this.$router.push('/goods')
+      })
+    },
   },
   computed: {
     cateId() {
@@ -262,5 +339,11 @@ export default {
 <style scoped>
 .el-cascader {
   width: 200px;
+}
+.imgWidth {
+  width: 100%;
+}
+.addBtn {
+  margin-top: 15px;
 }
 </style>
