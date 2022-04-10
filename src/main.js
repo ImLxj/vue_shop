@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2022-04-08 18:05:48
- * @LastEditTime: 2022-04-10 11:21:17
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-04-10 15:31:12
+ * @LastEditors: 呲牙
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: \vue_shop\src\main.js
  */
@@ -21,15 +21,30 @@ import VueQuillEditor from 'vue-quill-editor'
 import 'quill/dist/quill.core.css' // import styles
 import 'quill/dist/quill.snow.css' // for snow theme
 import 'quill/dist/quill.bubble.css' // for bubble theme
+
+// 导入 Nprogress 包对应的JS和css
+import Nprogress from 'nprogress'
+import 'nprogress/nprogress.css'
 // 配置请求的根路径
 axios.defaults.baseURL = 'http://127.0.0.1:8888/api/private/v1/'
 Vue.prototype.$http = axios
-// 设置拦截器
+
+// 设置拦截器，在request 拦截器中，展示进度条
 axios.interceptors.request.use(config => {
+  // 展示进度条
+  Nprogress.start()
   config.headers.Authorization = window.sessionStorage.getItem('token')
   // console.log(config);
   return config
 })
+
+// 在response 拦截器中， 隐藏进度条
+axios.interceptors.response.use(config => {
+  // 隐藏进度条
+  Nprogress.done()
+  return config
+})
+
 Vue.config.productionTip = false
 
 // 定义全局格式化时间的过滤器
