@@ -1,4 +1,5 @@
-# vue_shop
+# 电商后台管理系统
+**后台api采用的黑马商城的api接口**
 
 ## Project setup
 ```
